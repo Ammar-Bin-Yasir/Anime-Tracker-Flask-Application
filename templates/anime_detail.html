@@ -1,0 +1,145 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ anime.display_name }}{% endblock %}
+
+{% block content %}
+<div class="anime-detail-header"
+    style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.7), #1a1a1a), url('{{ anime.image_url }}');">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-md-3">
+                <img src="{{ anime.image_url }}" class="img-fluid rounded shadow-lg anime-poster"
+                    alt="{{ anime.display_name }}">
+            </div>
+            <div class="col-md-9">
+                <h1 class="display-4 fw-bold text-light">{{ anime.display_name }}</h1>
+                <!-- Optional: Show original name if different, or just remove subtitle -->
+                <h4 class="text-muted mb-3">{{ anime.name if anime.name != anime.display_name else '' }}</h4>
+
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="badge bg-primary">{{ anime.type }}</span>
+                    <span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>{{ anime.score }}</span>
+                    <span class="badge bg-secondary">{{ anime.episodes }} Eps</span>
+                    <span class="badge bg-info text-dark">{{ anime.status }}</span>
+                    <span class="badge bg-light text-dark">{{ anime.rating }}</span>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="text-light">Synopsis</h5>
+                    <p class="text-light-50">{{ anime.synopsis }}</p>
+                </div>
+
+                <div class="d-flex gap-3 align-items-center">
+                    {% if session.get('user_id') %}
+                    {% if in_watchlist %}
+                    <div class="dropdown">
+                        <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-check me-2"></i>{{ watchlist_item.status|replace('_', ' ')|title }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="updateStatus('{{ anime.anime_id }}', 'watching')">Watching</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="updateStatus('{{ anime.anime_id }}', 'completed')">Completed</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="updateStatus('{{ anime.anime_id }}', 'plan_to_watch')">Plan to Watch</a>
+                            </li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="updateStatus('{{ anime.anime_id }}', 'dropped')">Dropped</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="updateStatus('{{ anime.anime_id }}', 'on_hold')">On Hold</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="#"
+                                    onclick="removeFromWatchlist('{{ anime.anime_id }}')">Remove</a></li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <button class="btn btn-primary btn-lg" onclick="addToWatchlist('{{ anime.anime_id }}')">
+                        <i class="fas fa-plus me-2"></i>Add to List
+                    </button>
+                    {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login to Add</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card bg-dark-subtle mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-primary mb-3">Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Aired:</strong> {{ anime.aired }}</p>
+                            <p><strong>Premiered:</strong> {{ anime.premiered }}</p>
+                            <p><strong>Studios:</strong> {{ anime.studios }}</p>
+                            <p><strong>Source:</strong> {{ anime.source }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Duration:</strong> {{ anime.duration }}</p>
+                            <p><strong>Rank:</strong> #{{ anime.rank }}</p>
+                            <p><strong>Popularity:</strong> #{{ anime.popularity }}</p>
+                            <p><strong>Members:</strong> {{ anime.members }}</p>
+                        </div>
+                    </div>
+                    <p><strong>Genres:</strong> {{ anime.genres }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Similar Anime Placeholder -->
+            <h5 class="mb-3">You might also like</h5>
+            <div class="alert alert-info">Recommendations coming soon!</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function addToWatchlist(animeId) {
+        fetch(`/api/watchlist/add/${animeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'status=plan_to_watch'
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message);
+            });
+    }
+
+    function updateStatus(animeId, status) {
+        fetch(`/api/watchlist/update/${animeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `status=${status}`
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message);
+            });
+    }
+
+    function removeFromWatchlist(animeId) {
+        if (!confirm('Are you sure?')) return;
+        fetch(`/api/watchlist/remove/${animeId}`, {
+            method: 'POST'
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message);
+            });
+    }
+</script>
+{% endblock %}

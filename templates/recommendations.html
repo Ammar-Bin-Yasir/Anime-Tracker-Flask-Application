@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}Recommendations{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Recommended for You</h2>
+
+    {% if recommendations %}
+    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-4">
+        {% for anime in recommendations %}
+        <div class="col">
+            <div class="anime-card h-100">
+                <a href="{{ url_for('anime_detail', anime_id=anime.anime_id) }}" class="text-decoration-none">
+                    <div class="card-img-wrapper">
+                        <img src="{{ anime.image_url }}" class="card-img-top" alt="{{ anime.display_name }}"
+                            loading="lazy">
+                        <div class="card-overlay">
+                            <span class="score-badge"><i class="fas fa-star me-1"></i>{{ anime.score }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <h6 class="card-title text-light text-truncate">{{ anime.display_name }}</h6>
+                        <small class="text-muted">{{ anime.genres.split(',')[0] if anime.genres else 'Anime' }}</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+        <p class="lead text-muted">Start adding anime to your watchlist (Watching or Completed) to get recommendations!
+        </p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Browse Anime</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

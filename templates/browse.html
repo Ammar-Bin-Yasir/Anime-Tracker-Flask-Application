@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+
+{% block title %}Browse Anime{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Filter Box (AniWatch Style) -->
+    <div class="filter-container">
+        <form action="{{ url_for('browse_all') }}" method="get">
+
+            <div class="filter-section-title">Filter Options</div>
+            <div class="filter-controls">
+
+                <!-- Type Filter -->
+                <div class="filter-select-wrapper">
+                    <label class="filter-label">Type</label>
+                    <select name="type" class="filter-select">
+                        <option value="">All</option>
+                        <option value="TV" {% if current_type=='TV' %}selected{% endif %}>TV</option>
+                        <option value="Movie" {% if current_type=='Movie' %}selected{% endif %}>Movie</option>
+                        <option value="ONA" {% if current_type=='ONA' %}selected{% endif %}>ONA</option>
+                        <option value="OVA" {% if current_type=='OVA' %}selected{% endif %}>OVA</option>
+                        <option value="Special" {% if current_type=='Special' %}selected{% endif %}>Special</option>
+                    </select>
+                </div>
+
+                <!-- Sort Filter -->
+                <div class="filter-select-wrapper">
+                    <label class="filter-label">Sort</label>
+                    <select name="sort" class="filter-select">
+                        <option value="name" {% if current_sort=='name' %}selected{% endif %}>Name A-Z</option>
+                        <option value="score" {% if current_sort=='score' %}selected{% endif %}>Score</option>
+                        <option value="popularity" {% if current_sort=='popularity' %}selected{% endif %}>Popularity
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Rated Filter -->
+                <div class="filter-select-wrapper">
+                    <label class="filter-label">Rated</label>
+                    <select name="rated" class="filter-select">
+                        <option value="">All</option>
+                        <option value="G" {% if current_rated=='G' %}selected{% endif %}>G - All Ages</option>
+                        <option value="PG" {% if current_rated=='PG' %}selected{% endif %}>PG - Children</option>
+                        <option value="PG-13" {% if current_rated=='PG-13' %}selected{% endif %}>PG-13 - Teens 13+
+                        </option>
+                        <option value="R" {% if current_rated=='R' %}selected{% endif %}>R - 17+ (violence & profanity)
+                        </option>
+                        <option value="R+" {% if current_rated=='R+' %}selected{% endif %}>R+ - Mild Nudity</option>
+                        <option value="Rx" {% if current_rated=='Rx' %}selected{% endif %}>Rx - Hentai</option>
+                    </select>
+                </div>
+
+                <!-- Score Filter -->
+                <div class="filter-select-wrapper">
+                    <label class="filter-label">Score</label>
+                    <select name="score" class="filter-select">
+                        <option value="0">All</option>
+                        <option value="10" {% if current_score==10 %}selected{% endif %}>10 - Masterpiece</option>
+                        <option value="9" {% if current_score==9 %}selected{% endif %}>9 - Great</option>
+                        <option value="8" {% if current_score==8 %}selected{% endif %}>8 - Very Good</option>
+                        <option value="7" {% if current_score==7 %}selected{% endif %}>7 - Good</option>
+                        <option value="6" {% if current_score==6 %}selected{% endif %}>6 - Fine</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-section-title">Genre</div>
+            <div class="genre-grid mb-4">
+                {% for g in genres %}
+                <label>
+                    <input type="checkbox" name="genre" value="{{ g }}" class="genre-checkbox" {% if g in current_genres
+                        %}checked{% endif %}>
+                    <span class="genre-pill">{{ g }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="filter-btn">Filter</button>
+        </form>
+    </div>
+
+    <!-- Results Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-light mb-0">Browse Anime</h2>
+        <span class="text-muted">Showing {{ total_anime }} results</span>
+    </div>
+
+    <!-- Anime Grid -->
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
+        {% for anime in anime_list %}
+        <div class="col">
+            <div class="anime-card h-100">
+                <a href="{{ url_for('anime_detail', anime_id=anime.anime_id) }}" class="text-decoration-none">
+                    <div class="card-img-wrapper">
+                        <img src="{{ anime.image_url }}" class="card-img-top" alt="{{ anime.display_name }}"
+                            loading="lazy">
+                        <div class="card-overlay">
+                            <span class="score-badge"><i class="fas fa-star me-1"></i>{{ anime.score }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <h6 class="card-title text-muted text-truncate">{{ anime.display_name }}</h6>
+                        <small class="text-muted">{{ anime.genres.split(',')[0] if anime.genres else 'Anime' }}</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <nav class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page > 1 %}
+            <li class="page-item">
+                <!-- Use a helper or just manually reconstruct URL carefully. Simplest is to rely on creating urls with all params -->
+                <a class="page-link"
+                    href="{{ url_for('browse_all', page=page-1, sort=current_sort, type=current_type, rated=current_rated, score=current_score, genre=current_genres) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for p in range(max(1, page-2), min(total_pages+1, page+3)) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link"
+                    href="{{ url_for('browse_all', page=p, sort=current_sort, type=current_type, rated=current_rated, score=current_score, genre=current_genres) }}">{{
+                    p }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page < total_pages %} <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('browse_all', page=page+1, sort=current_sort, type=current_type, rated=current_rated, score=current_score, genre=current_genres) }}">Next</a>
+                </li>
+                {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

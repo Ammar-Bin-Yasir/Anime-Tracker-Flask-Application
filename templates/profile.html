@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <img src="{{ url_for('static', filename='images/default_avatar.png') }}" alt="Avatar">
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.username }}</h2>
+            <p>Member since: {{ user.created_at|timesince }}</p>
+            <p>Email: {{ user.email }}</p>
+        </div>
+    </div>
+
+    <div class="profile-stats">
+        <h3>Anime Stats</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value">{{ stats.get('watching', 0) }}</span>
+                <span class="stat-label">Watching</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ stats.get('completed', 0) }}</span>
+                <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ stats.get('plan_to_watch', 0) }}</span>
+                <span class="stat-label">Plan to Watch</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ stats.get('dropped', 0) }}</span>
+                <span class="stat-label">Dropped</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">{{ stats.get('on_hold', 0) }}</span>
+                <span class="stat-label">On Hold</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

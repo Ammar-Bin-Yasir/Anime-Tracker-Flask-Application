@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+
+{% block title %}AniRec - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {% for anime in hero_anime %}
+      <div class="carousel-item {% if loop.first %}active{% endif %}">
+        <div class="hero-slide" style="background-image: url('{{ anime.image_url }}');">
+          <div class="container hero-content">
+            <div class="row">
+              <div class="col-lg-7 col-md-9">
+                <h1 class="hero-title">{{ anime.display_name }}</h1>
+                <div class="hero-meta">
+                  <span class="badge bg-light text-dark fw-bold">{{ anime.type }}</span>
+                  <span><i class="fas fa-star text-warning me-1"></i>{{ anime.score }}</span>
+                  <span>{{ anime.episodes }} Episodes</span>
+                  <span>{{ anime.genres.split(',')[0] }}</span>
+                </div>
+                <p class="hero-description">{{ anime.synopsis }}</p>
+                <div class="hero-buttons">
+                  <a href="{{ url_for('anime_detail', anime_id=anime.anime_id) }}" class="btn btn-hero-primary">
+                    <i class="fas fa-info-circle me-2"></i>Details
+                  </a>
+                  <button class="btn btn-hero-secondary"
+                    data-logged-in="{{ 'true' if session.get('user_id') else 'false' }}"
+                    onclick="addToWatchlist('{{ anime.anime_id }}', this)">
+                    <i class="fas fa-plus me-2"></i>Add to List
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+    </button>
+  </div>
+</section>
+
+<!-- Intro & Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-intro">
+      <h2 class="intro-title">Welcome to AniRec</h2>
+      <p class="intro-text">Your ultimate destination for discovering, tracking, and analyzing your favorite anime
+        series. Join our community today!</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- Feature 1 -->
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <i class="fas fa-search"></i>
+          </div>
+          <h3 class="feature-title">Discover</h3>
+          <p class="feature-desc">Explore a vast library of anime with advanced filters and personalized
+            recommendations.</p>
+        </div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <i class="fas fa-list-ul"></i>
+          </div>
+          <h3 class="feature-title">Track</h3>
+          <p class="feature-desc">Create your watchlist, mark episodes as watched, and never lose track of your
+            progress.</p>
+        </div>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3 class="feature-title">Analyze</h3>
+          <p class="feature-desc">Get detailed insights into anime scores, popularity trends, and global rankings.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Top Rated Section -->
+<section class="container py-5 rounded-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="section-title">Top Rated</h2>
+    <a href="{{ url_for('browse_all') }}" class="text-primary text-decoration-none">View All <i
+        class="fas fa-arrow-right ms-1"></i></a>
+  </div>
+  <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-4">
+    {% for anime in top_anime %}
+    <div class="col">
+      <div class="anime-card h-100">
+        <a href="{{ url_for('anime_detail', anime_id=anime.anime_id) }}" class="text-decoration-none">
+          <div class="card-img-wrapper">
+            <img src="{{ anime.image_url }}" class="card-img-top" alt="{{ anime.display_name }}" loading="lazy">
+            <div class="card-overlay">
+              <span class="score-badge"><i class="fas fa-star me-1"></i>{{ anime.score }}</span>
+            </div>
+          </div>
+          <div class="card-body p-2">
+            <h6 class="card-title text-light text-truncate">{{ anime.display_name }}</h6>
+            <small class="text-muted">{{ anime.genres.split(',')[0] if anime.genres else 'Anime' }}</small>
+          </div>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function addToWatchlist(animeId, btnElement) {
+    const isLoggedIn = btnElement.getAttribute('data-logged-in') === 'true';
+
+    if (!isLoggedIn) {
+      alert('Please log in to add anime to your list.');
+      // Optional: redirect to login
+      // window.location.href = "{{ url_for('login') }}";
+      return;
+    }
+
+    fetch(`/api/watchlist/add/${animeId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'status=plan_to_watch'
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update button UI
+          btnElement.innerHTML = '<i class="fas fa-check me-2"></i>Added';
+          btnElement.classList.remove('btn-hero-secondary');
+          btnElement.classList.add('btn-success');
+          btnElement.disabled = true;
+        } else {
+          alert(data.message);
+        }
+      });
+  }
+</script>
+{% endblock %}
