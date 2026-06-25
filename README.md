@@ -19,17 +19,18 @@ A full-stack web app for tracking your anime watchlist, discovering new shows, a
 
 Anime metadata comes from the [**Anime Dataset 2023**](https://www.kaggle.com/datasets/dbdmobile/myanimelist-dataset) on Kaggle, sourced from MyAnimeList — one of the largest community-maintained anime databases. The dataset spans 86 columns of metadata per title (score, genres, synopsis, studios, episode counts, popularity rank, and more); this app loads a focused subset of those fields into `anime_app.db` via the `scripts/` folder.
 
-![Genre and score distribution](genre_score_distribution.png)
+<img width="1632" height="744" alt="genre_score_distribution" src="https://github.com/user-attachments/assets/a17a934c-1b75-4182-9eaa-1e1a5abfdb6e" />
 
 ## Architecture
 
-![Architecture diagram](architecture.png)
+<img width="1485" height="960" alt="architecture" src="https://github.com/user-attachments/assets/a4f78cf9-a453-45d3-9cc2-3aff31c0a8b9" />
+
 
 The Flask app is the single entry point for the browser. It delegates two different jobs to two different places: persistent data (users, the anime catalog, watchlists, ratings) lives in SQLite, while similarity search is handled entirely in memory by the recommender, which loads the anime table once at startup rather than hitting the database on every request — recomputing TF-IDF vectors per request would be wasteful since the underlying anime metadata doesn't change at runtime.
 
 ## How the recommendation engine works
 
-![TF-IDF and cosine similarity concept](tfidf_concept.png)
+<img width="1601" height="735" alt="tfidf_concept" src="https://github.com/user-attachments/assets/2b052051-db81-499e-a9cb-c1e228d321ec" />
 
 The recommender (`recommender.py`) treats each anime's **genres + synopsis** as a single block of text, then uses **TF-IDF (Term Frequency–Inverse Document Frequency)** to turn that text into a numeric vector — weighting words that are distinctive to that anime's description higher than common words that appear everywhere (English stopwords are filtered out entirely).
 
